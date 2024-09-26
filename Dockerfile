@@ -16,4 +16,4 @@ RUN poetry install --no-root
 
 EXPOSE 8005
 
-ENTRYPOINT ["poetry", "run", "gunicorn", "--bind", "0:8005", "joatss.wsgi:application", "--workers", "4"]
+ENTRYPOINT ["poetry", "run", "gunicorn", "--bind", "0:8005", "winoreat.wsgi:application", "--workers", "4"]
