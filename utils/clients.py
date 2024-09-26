@@ -37,8 +37,8 @@ class NaverClient:
     def __init__(self) -> None:
         self.develop_platform_client_id: str = settings.NAVER_DEVELOPER_PLATFORM_CLIENT_ID
         self.develop_platform_client_secret: str = settings.NAVER_DEVELOPER_PLATFORM_CLIENT_SECRET
-        self.cloud_platform_client_id: str = settings.NAVER_PLATFORM_PLATFORM_CLIENT_ID
-        self.cloud_platform_client_secret: str = settings.NAVER_PLATFORM_PLATFORM_CLIENT_SECRET
+        self.cloud_platform_client_id: str = settings.NAVER_CLOUD_PLATFORM_CLIENT_ID
+        self.cloud_platform_client_secret: str = settings.NAVER_CLOUD_PLATFORM_CLIENT_SECRET
 
     def _is_search_places(self, endpoint: str) -> True:
         if endpoint == 'v1/search/local.json' or endpoint == 'v1/search/image.json':
