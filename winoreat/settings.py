@@ -88,6 +88,17 @@ if os.environ.get('ENV') == 'local':
             'NAME': BASE_DIR / 'db.sqlite3',
         }
     }
+elif os.environ.get('ENV') == 'prod':
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.mysql',
+            'NAME': os.environ['MYSQL_DATABASE'],
+            'USER' : os.environ['MYSQL_USER'],
+            'PASSWORD' : os.environ['MYSQL_PASSWORD'],
+            'HOST' : os.environ['MYSQL_HOST'],
+            'PORT' : os.environ['MYSQL_PORT'],
+        }
+    }
     
 
 REST_FRAMEWORK = {
@@ -137,3 +148,13 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+NAVER_DEVELOPER_PLATFORM_CLIENT_ID = os.environ.get('NAVER_DEVELOPER_PLATFORM_CLIENT_ID')
+
+NAVER_DEVELOPER_PLATFORM_CLIENT_SECRET = os.environ.get('NAVER_DEVELOPER_PLATFORM_CLIENT_SECRET')
+
+NAVER_CLOUD_PLATFORM_CLIENT_ID = os.environ.get('NAVER_CLOUD_PLATFORM_CLIENT_ID')
+
+NAVER_CLOUD_PLATFORM_CLIENT_SECRET = os.environ.get('NAVER_CLOUD_PLATFORM_CLIENT_SECRET')
+
+
