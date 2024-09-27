@@ -79,7 +79,7 @@ class NaverClient:
         result: dict[str, Any] = self._make_request(ENDPOINT, params)
         return result['items']
     
-    def get_images(self, name: str, display: int = 2) -> list:
+    def get_images(self, name: str, display: int = 5) -> list:
         ENDPOINT: Final[str] = 'v1/search/image.json'
         params: dict[str, Any] = {
             'query': name,
