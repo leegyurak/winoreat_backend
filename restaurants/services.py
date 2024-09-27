@@ -129,7 +129,7 @@ class RestaurantService:
         if review:
             Review.objects.create(restaurant=restaurant, post=review)
             
-        images: list[str] = self._get_image_links(name)
+        images: list[str] = self._get_image_links(f'{address} {name}')
         if images:
             RestaurantImage.objects.bulk_create(
                 [
