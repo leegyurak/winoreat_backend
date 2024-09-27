@@ -14,7 +14,6 @@ class RestaurantManager(models.Manager):
             .with_address_count()
             .with_review_count()
             .with_player_pick()
-            .filter_by_criteria()
             .get_latest_by_full_address()
             .order_by_criteria()
             .with_review_posts()

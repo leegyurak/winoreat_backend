@@ -51,9 +51,6 @@ class RestaurantQuerySet(models.QuerySet):
             full_address=Concat("address", Value(" "), "detail_address")
         )
 
-    def filter_by_criteria(self):
-        return self.filter(Q(address_count__gte=3) | Q(players_pick__isnull=False))
-
     def get_latest_by_full_address(self):
         subquery = (
             self.values("full_address").annotate(max_id=Max("id")).values("max_id")
