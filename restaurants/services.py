@@ -28,17 +28,18 @@ from utils.parsers import remove_html_tags
 
 class RestaurantService:
     DAEGU_PREFIX = "대구광역시"
+    GYUNGSAN_PREFIX = "경상북도 경산시"
     RESTAURANT_ADD_COOLDOWN_DAYS = 3
     METERS_PER_KM = 1000
 
     def __init__(self):
         self._naver_client = NaverClient()
 
-    def _filter_daegu_restaurants(self, restaurants):
+    def _filter_daegu_gyungsan_restaurants(self, restaurants):
         return [
             restaurant
             for restaurant in restaurants
-            if restaurant.get("roadAddress", "").startswith(self.DAEGU_PREFIX)
+            if restaurant.get("roadAddress", "").startswith(self.DAEGU_PREFIX) or restaurant.get("roadAddress", "").startswith(self.GYUNGSAN_PREFIX)
         ]
 
     def _clean_road_address(self, name, road_address):
@@ -107,6 +108,7 @@ class RestaurantService:
         return [
             item.get('link')
             for item in items
+            if item.get('link').startsWith('https://')
         ]
 
     def create_restaurant(self, name, address, category, ip_address, review=None):
@@ -129,7 +131,7 @@ class RestaurantService:
         if review:
             Review.objects.create(restaurant=restaurant, post=review)
             
-        images: list[str] = self._get_image_links(f'{address} {name}')
+        images: list[str] = self._get_image_links({name})
         if images:
             RestaurantImage.objects.bulk_create(
                 [
