@@ -30,7 +30,7 @@ class NaverExceptionHandler:
     @classmethod
     def raise_exception(cls, error_code: str) -> NoReturn:
         exception_class = cls.ERROR_MAP.get(error_code, UnknownNaverException('알 수 없는 에러가 발생했습니다.'))
-        raise exception_class(f"Naver API Error: {error_code}")
+        raise exception_class
 
 
 class NaverClient:

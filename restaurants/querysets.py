@@ -52,7 +52,7 @@ class RestaurantQuerySet(models.QuerySet):
         )
 
     def filter_by_criteria(self):
-        return self.filter(Q(address_count__gte=5) | Q(players_pick__isnull=False))
+        return self.filter(Q(address_count__gte=3) | Q(players_pick__isnull=False))
 
     def get_latest_by_full_address(self):
         subquery = (

@@ -60,4 +60,4 @@ class RestaurantImage(TimeStampedModel):
         verbose_name="식당 id",
         related_name="images",
     )
-    img_url = models.URLField()
+    img_url = models.URLField(max_length=4095)
