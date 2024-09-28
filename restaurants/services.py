@@ -72,7 +72,7 @@ class RestaurantService:
         except Exception as exc:
             self._handle_search_exceptions(exc)
 
-        daegu_restaurants = self._filter_daegu_restaurants(restaurants)
+        daegu_restaurants = self._filter_daegu_gyungsan_restaurants(restaurants)
         search_results = [self._create_search_dto(restaurant) for restaurant in daegu_restaurants]
 
         if not search_results:
