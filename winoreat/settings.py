@@ -30,7 +30,7 @@ elif os.environ.get('ENV') == 'prod':
 if os.environ.get('ENV') == 'local':
     DEBUG = True
 elif os.environ.get('ENV') == 'prod':
-    DEBUG = True
+    DEBUG = False
 
 ALLOWED_HOSTS = ['*']
 
