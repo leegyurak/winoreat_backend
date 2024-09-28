@@ -51,11 +51,24 @@ class RestaurantQuerySet(models.QuerySet):
             full_address=Concat("address", Value(" "), "detail_address")
         )
 
-    def get_latest_by_full_address(self):
+    def get_latest_or_player_pick_by_full_address(self):
         subquery = (
-            self.values("full_address").annotate(max_id=Max("id")).values("max_id")
+            self.values('name', 'full_address')
+            .annotate(
+                has_player_pick=Max(Case(
+                    When(players_pick__isnull=False, then=1),
+                    default=0,
+                    output_field=IntegerField()
+                )),
+                max_id=Max('id')
+            )
+            .values('name', 'full_address', 'has_player_pick', 'max_id')
         )
-        return self.filter(id__in=Subquery(subquery))
+        
+        return self.filter(
+            Q(id__in=Subquery(subquery.filter(has_player_pick=1).values('max_id'))) |
+            Q(id__in=Subquery(subquery.filter(has_player_pick=0).values('max_id')))
+        )
 
     def order_by_criteria(self):
         return self.order_by(
