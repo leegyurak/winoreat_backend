@@ -8,20 +8,19 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from exceptions import (
+    AlreadyAddRestaurantException,
     ApplicationAuthenticationFailedException,
     CategoryNotFoundException,
     InternalServerErrorException,
     InvalidRequestException,
     NotFoundException,
-    AlreadyAddRestaurantException,
-    
 )
-from restaurants.dtos import SearchRestaurantsDto, CreateRestaurantDto
+from restaurants.dtos import CreateRestaurantDto, SearchRestaurantsDto
 from restaurants.filters import RestaurantFilter
 from restaurants.models import Restaurant
 from restaurants.serializers import (
-    CreateRestaurantResponseSerializer,
     CreateRestaurantRequestSerializer,
+    CreateRestaurantResponseSerializer,
     ListRestaurantSerializer,
     SearchRestaurantsQuerySerializer,
     SearchRestaurantsResponseSerializer,
@@ -64,12 +63,12 @@ class SearchRestaurantsView(APIView):
             SearchRestaurantsResponseSerializer(search_restaurants, many=True)
         )
         return Response(response_serializer.data, status=status.HTTP_200_OK)
-    
-    
+
+
 class CreateRestaurantView(GenericAPIView):
     serializer_class = CreateRestaurantRequestSerializer
     queryset = Restaurant.objects.all()
-    
+
     @transaction.atomic
     def post(self, request: Request) -> Response:
         request_serializer: CreateRestaurantRequestSerializer = self.get_serializer(
@@ -79,16 +78,22 @@ class CreateRestaurantView(GenericAPIView):
         try:
             restaurant: CreateRestaurantDto = RestaurantService().create_restaurant(
                 **request_serializer.validated_data,
-                ip_address=request.META.get('HTTP_X_FORWARDED_FOR').split(',')[0] if request.META.get('HTTP_X_FORWARDED_FOR') else request.META.get('REMOTE_ADDR'),
+                ip_address=(
+                    request.META.get("HTTP_X_FORWARDED_FOR").split(",")[0]
+                    if request.META.get("HTTP_X_FORWARDED_FOR")
+                    else request.META.get("REMOTE_ADDR")
+                ),
             )
         except (
             InvalidRequestException,
             AlreadyAddRestaurantException,
-        )as exc:
+        ) as exc:
             raise ValidationError(detail=str(exc)) from exc
         except CategoryNotFoundException as exc:
             raise NotFound(detail=str(exc)) from exc
         except InternalServerErrorException as exc:
             return Response([str(exc)], status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-        response_serializer: CreateRestaurantResponseSerializer = CreateRestaurantResponseSerializer(restaurant)
+        response_serializer: CreateRestaurantResponseSerializer = (
+            CreateRestaurantResponseSerializer(restaurant)
+        )
         return Response(response_serializer.data, status=status.HTTP_201_CREATED)

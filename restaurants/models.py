@@ -51,8 +51,8 @@ class Review(TimeStampedModel):
         related_name="reviews",
     )
     post = models.TextField()
-    
-    
+
+
 class RestaurantImage(TimeStampedModel):
     restaurant = models.ForeignKey(
         Restaurant,

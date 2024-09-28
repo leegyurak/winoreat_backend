@@ -17,7 +17,11 @@ Including another URLconf
 
 from django.urls import path
 
-from restaurants.views import ListRestaurantView, SearchRestaurantsView, CreateRestaurantView
+from restaurants.views import (
+    CreateRestaurantView,
+    ListRestaurantView,
+    SearchRestaurantsView,
+)
 
 urlpatterns = [
     path("restaurants", ListRestaurantView.as_view()),
