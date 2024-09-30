@@ -38,7 +38,7 @@ class CreateBugSerializer(serializers.ModelSerializer):
     class Meta:
         model = Bug
         fields = ("bug_type", "title", "description", "email")
-        
+
     def save(self, **kwargs):
         return Bug.objects.create(
             **self.validated_data,

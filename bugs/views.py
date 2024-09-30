@@ -14,8 +14,8 @@ class CreateListBugsView(ListCreateAPIView):
     permission_classes = (AllowAny,)
     queryset = Bug.objects.all()
     filterset_class = BugFilter
-    
-    def get_serializer_class(self):
+
+    def get_serializer_class(self) -> CreateBugSerializer | ListBugsSerializer:
         if self.request.method == 'POST':
             return CreateBugSerializer
         return ListBugsSerializer
