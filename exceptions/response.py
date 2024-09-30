@@ -26,3 +26,8 @@ class AlreadyAddRestaurantException(Exception):
 class CategoryNotFoundException(Exception):
     """존재하지 않는 카테고리"""
     pass
+
+
+class DistanceTooFarException(Exception):
+    """너무 먼 식당"""
+    pass

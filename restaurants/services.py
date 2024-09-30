@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, NoReturn
 
 from django.conf import settings
 from django.utils import timezone
@@ -8,6 +8,7 @@ from exceptions import (
     ApplicationAuthenticationFailedException,
     AuthenticationFailedException,
     CategoryNotFoundException,
+    DistanceTooFarException,
     IncorrectQueryRequestException,
     InternalServerErrorException,
     InvalidDisplayValueException,
@@ -59,6 +60,7 @@ class RestaurantService:
     def _handle_search_exceptions(self, exception):
         exception_mapping = {
             (
+                DistanceTooFarException,
                 InvalidDisplayValueException,
                 IncorrectQueryRequestException,
                 InvalidStartValueException,
@@ -108,9 +110,13 @@ class RestaurantService:
                 f"같은 식당은 {self.RESTAURANT_ADD_COOLDOWN_DAYS}일에 1번만 추천할 수 있습니다."
             )
 
-    def _validate_category(self, category):
+    def _validate_category(self, category) -> NoReturn:
         if category not in Restaurant.RestaurantType.values:
             raise CategoryNotFoundException("해당하는 카테고리를 찾을 수 없습니다.")
+        
+    def _validate_distance(self, distance: float) -> NoReturn:
+        if distance > 20:
+            raise DistanceTooFarException("라팍과의 직선 거리가 20km 초과입니다.")
 
     def _get_geocode_data(self, address):
         try:
