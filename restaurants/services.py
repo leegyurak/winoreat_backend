@@ -37,7 +37,9 @@ class RestaurantService:
     def __init__(self):
         self._naver_client: NaverClient = NaverClient()
 
-    def _filter_daegu_gyungsan_restaurants(self, restaurants: dict[str, Any]) -> list[str]:
+    def _filter_daegu_gyungsan_restaurants(
+        self, restaurants: dict[str, Any]
+    ) -> list[str]:
         return [
             restaurant
             for restaurant in restaurants
@@ -54,7 +56,9 @@ class RestaurantService:
 
     def _create_search_dto(self, restaurant: dict[str, Any]) -> SearchRestaurantsDto:
         name: str = remove_html_tags(restaurant.get("title", ""))
-        road_address: str = self._clean_road_address(name, restaurant.get("roadAddress", ""))
+        road_address: str = self._clean_road_address(
+            name, restaurant.get("roadAddress", "")
+        )
         return SearchRestaurantsDto(name=name, road_address=road_address)
 
     def _handle_search_exceptions(self, exception: Exception) -> None:
@@ -85,9 +89,12 @@ class RestaurantService:
         except Exception as exc:
             self._handle_search_exceptions(exc)
 
-        daegu_gyungsan_restaurants: list[str] = self._filter_daegu_gyungsan_restaurants(restaurants)
+        daegu_gyungsan_restaurants: list[str] = self._filter_daegu_gyungsan_restaurants(
+            restaurants
+        )
         search_results: list[SearchRestaurantsDto] = [
-            self._create_search_dto(restaurant) for restaurant in daegu_gyungsan_restaurants
+            self._create_search_dto(restaurant)
+            for restaurant in daegu_gyungsan_restaurants
         ]
 
         if not search_results:
@@ -95,7 +102,9 @@ class RestaurantService:
 
         return search_results
 
-    def _check_duplicate_restaurant(self, name: str, address: str, ip_address: str) -> None:
+    def _check_duplicate_restaurant(
+        self, name: str, address: str, ip_address: str
+    ) -> None:
         cooldown_date: datetime = timezone.now() - timezone.timedelta(
             days=self.RESTAURANT_ADD_COOLDOWN_DAYS
         )
@@ -164,7 +173,12 @@ class RestaurantService:
             Review.objects.create(restaurant=restaurant, post=review)
 
         images: list[str] = self._get_image_links({name})
-        if images:
+        if (
+            images
+            and not RestaurantImage.objects.select_related("restaurant")
+            .filter(restaurant__name=restaurant.name)
+            .exists()
+        ):
             RestaurantImage.objects.bulk_create(
                 [
                     RestaurantImage(

@@ -28,7 +28,8 @@ class Restaurant(TimeStampedModel):
     longitude = models.FloatField(verbose_name="경도")
     latitude = models.FloatField(verbose_name="위도")
     far_from_lions_park = models.FloatField(
-        verbose_name="라팍과의 직선 거리", db_index=True,
+        verbose_name="라팍과의 직선 거리",
+        db_index=True,
     )
     category = models.CharField(
         verbose_name="카테고리", choices=RestaurantType.choices, max_length=63
