@@ -32,7 +32,7 @@ if os.environ.get('ENV') == 'local':
 elif os.environ.get('ENV') == 'prod':
     DEBUG = False
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = [os.environ.get('ALLOWED_HOSTS')]
 
 
 # Application definition
