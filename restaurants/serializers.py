@@ -15,7 +15,6 @@ class RestaurantImageUrlsField(serializers.RelatedField):
 
 class ListRestaurantSerializer(serializers.ModelSerializer):
     review_posts = ReviewPostsField(source="reviews", many=True, read_only=True)
-    count = serializers.IntegerField(source="suggested_count")
     image_urls = RestaurantImageUrlsField(source="images", many=True, read_only=True)
 
     class Meta:
