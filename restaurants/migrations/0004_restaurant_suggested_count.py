@@ -24,7 +24,7 @@ def set_default_suggested_count(apps, schema_editor):
         target_restaurant.save()
         reviews.update(restaurant=target_restaurant)
         images.update(restaurant=target_restaurant)
-        restaurants.exclude(id=target_restaurant).delete()
+        restaurants.exclude(id=target_restaurant.id).delete()
 
 
 class Migration(migrations.Migration):
