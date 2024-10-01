@@ -6,25 +6,25 @@ from django.db.models import Count
 from restaurants.models import Restaurant, RestaurantImage, Review
 
 
-async def set_default_suggested_count(apps, schema_editor):
+def set_default_suggested_count(apps, schema_editor):
     restaurant_groups = Restaurant.objects.values("name").annotate(count=Count("id"))
     for restaurant_group in restaurant_groups:
-        reviews = Review.objects.select_related("restaurant").filter(
+        reviews = Review.objects.filter(
             restaurant__name=restaurant_group["name"]
         )
-        images = RestaurantImage.objects.select_related("restaurant").filter(
+        images = RestaurantImage.objects.filter(
             restaurant__name=restaurant_group["name"]
         )
         restaurants = Restaurant.objects.filter(name=restaurant_group["name"])
         if restaurants.filter(players_pick__isnull=False).exists():
-            target_restaurant = await restaurants.aget(players_pick__isnull=False)
+            target_restaurant = restaurants.get(players_pick__isnull=False)
         else:
-            target_restaurant = await restaurants.afirst()
+            target_restaurant = restaurants.first()
         target_restaurant.suggested_count = restaurant_group["count"]
-        await target_restaurant.asave()
-        await reviews.aupdate(restaurant=target_restaurant)
-        await images.aupdate(restaurant=target_restaurant)
-        await restaurants.exclude(id=target_restaurant).adelete()
+        target_restaurant.save()
+        reviews.update(restaurant=target_restaurant)
+        images.update(restaurant=target_restaurant)
+        restaurants.exclude(id=target_restaurant).delete()
 
 
 class Migration(migrations.Migration):
