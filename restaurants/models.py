@@ -39,6 +39,7 @@ class Restaurant(TimeStampedModel):
     players_pick = models.CharField(
         verbose_name="이 가게를 고른 선수 이름", max_length=15, null=True, blank=True
     )
+    suggested_count = models.IntegerField(verbose_name="추천된 횟수", default=1)
 
     objects = RestaurantManager()
 

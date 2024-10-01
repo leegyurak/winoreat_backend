@@ -1,37 +1,26 @@
 from rest_framework import serializers
 
-from restaurants.models import Restaurant, RestaurantImage, Review
+from restaurants.models import Restaurant
+
+
+class ReviewPostsField(serializers.RelatedField):
+    def to_representation(self, value):
+        return value.post
+
+
+class RestaurantImageUrlsField(serializers.RelatedField):
+    def to_representation(self, value):
+        return value.img_url
 
 
 class ListRestaurantSerializer(serializers.ModelSerializer):
-    reviews = serializers.SerializerMethodField()
-    count = serializers.SerializerMethodField()
-    images = serializers.SerializerMethodField()
+    review_posts = ReviewPostsField(source="reviews", many=True, read_only=True)
+    count = serializers.IntegerField(source="suggested_count")
+    image_urls = RestaurantImageUrlsField(source="images", many=True, read_only=True)
 
     class Meta:
         model = Restaurant
         fields = "__all__"
-
-    def get_count(self, obj) -> int:
-        return Restaurant.objects.filter(name=obj.name).count()
-
-    def get_reviews(self, obj) -> list[str]:
-        if hasattr(obj, "review_posts"):
-            return [
-                review.post
-                for review in Review.objects.select_related("restaurant").filter(
-                    restaurant__name=obj.name
-                )
-            ]
-        return []
-
-    def get_images(self, obj) -> list[str]:
-        return [
-            restaurant_image.img_url
-            for restaurant_image in RestaurantImage.objects.select_related("restaurant")
-            .filter(restaurant__name=obj.name)
-            .order_by("-created")[:2]
-        ]
 
 
 class SearchRestaurantsResponseSerializer(serializers.Serializer):
