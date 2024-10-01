@@ -155,31 +155,35 @@ class RestaurantService:
         self._validate_category(category)
 
         x, y, distance = self._get_geocode_data(address)
+        
         distance = distance / self.METERS_PER_KM
-        self._validate_distance(distance=distance)
-
-        restaurant: Restaurant = Restaurant.objects.create(
-            name=name,
-            address=address,
-            detail_address=name,
-            ip_address=ip_address,
-            category=category,
-            longitude=x,
-            latitude=y,
-            far_from_lions_park=distance / self.METERS_PER_KM,
-        )
+        self._validate_distance(distance)
+        if Restaurant.objects.filter(
+            name=name, address=address, detail_address=name
+        ).exists():
+            restaurant: Restaurant = Restaurant.objects.get(
+                name=name, address=address, detail_address=name
+            )
+            restaurant.suggested_count += 1
+            restaurant.save()
+        else:
+            restaurant = Restaurant.objects.create(
+                name=name,
+                address=address,
+                detail_address=name,
+                ip_address=ip_address,
+                category=category,
+                longitude=x,
+                latitude=y,
+                far_from_lions_park=distance,
+            )
 
         if review:
-            Review.objects.create(restaurant=restaurant, post=review)
+            Review.objects.acreate(restaurant=restaurant, post=review)
 
         images: list[str] = self._get_image_links({name})
-        if (
-            images
-            and not RestaurantImage.objects.select_related("restaurant")
-            .filter(restaurant__name=restaurant.name)
-            .exists()
-        ):
-            RestaurantImage.objects.bulk_create(
+        if images:
+            RestaurantImage.objects.abulk_create(
                 [
                     RestaurantImage(
                         restaurant=restaurant,
@@ -188,8 +192,4 @@ class RestaurantService:
                     for image in images
                 ]
             )
-
-        restaurant_count: int = Restaurant.objects.filter(
-            name=name, address=address, detail_address=name
-        ).count()
-        return CreateRestaurantDto(count=restaurant_count)
+        return CreateRestaurantDto(count=restaurant.suggested_count)
