@@ -26,3 +26,8 @@ class AlreadyAddRestaurantException(Exception):
 class CategoryNotFoundException(Exception):
     """존재하지 않는 카테고리"""
     pass
+
+
+class TooFarFromLionsParkException(Exception):
+    """라팍과의 거리가 20km 초과임"""
+    pass
