@@ -1,28 +1,10 @@
-from datetime import datetime
 from typing import Any, Final
 
-from django.utils import timezone
-
-from exceptions import (
-    AlreadyAddRestaurantException,
-    ApplicationAuthenticationFailedException,
-    AuthenticationFailedException,
-    CategoryNotFoundException,
-    IncorrectQueryRequestException,
-    InternalServerErrorException,
-    InvalidDisplayValueException,
-    InvalidParameterException,
-    InvalidRequestException,
-    InvalidSearchAPIException,
-    InvalidSortValueException,
-    InvalidStartValueException,
-    MalformedEncodingException,
-    NotFoundException,
-    SystemErrorException,
-    UnknownNaverException,
-)
+from exceptions import NotFoundException
 from restaurants.dtos import CreateRestaurantDto, SearchRestaurantsDto
+from restaurants.handlers import RestaurantExceptionHandler
 from restaurants.models import IPAddress, Restaurant, RestaurantImage, Review
+from restaurants.validators import RestaurantValidator
 from utils.clients import NaverClient
 from utils.parsers import remove_html_tags
 
@@ -30,11 +12,12 @@ from utils.parsers import remove_html_tags
 class RestaurantService:
     DAEGU_PREFIX: Final[str] = "대구광역시"
     GYUNGSAN_PREFIX: Final[str] = "경상북도 경산시"
-    RESTAURANT_ADD_COOLDOWN_DAYS: Final[int] = 3
     METERS_PER_KM: Final[int] = 1000
 
     def __init__(self):
         self._naver_client: NaverClient = NaverClient()
+        self._validator: RestaurantValidator = RestaurantValidator()
+        self._exception_handler: RestaurantExceptionHandler = RestaurantExceptionHandler()
 
     def _filter_daegu_gyungsan_restaurants(self, restaurants: list[dict[str, Any]]) -> list[dict[str, Any]]:
         return [
@@ -51,37 +34,16 @@ class RestaurantService:
             else road_address
         )
 
-    def _create_search_dto(self, restaurant: dict[str, Any]) -> list[SearchRestaurantsDto]:
+    def _create_search_dto(self, restaurant: dict[str, Any]) -> SearchRestaurantsDto:
         name = remove_html_tags(restaurant.get("title", ""))
         road_address = self._clean_road_address(name, restaurant.get("roadAddress", ""))
         return SearchRestaurantsDto(name=name, road_address=road_address)
-
-    def _handle_search_exceptions(self, exception: Exception) -> Exception:
-        exception_mapping: dict[Exception, Exception] = {
-            (
-                InvalidDisplayValueException,
-                IncorrectQueryRequestException,
-                InvalidStartValueException,
-                InvalidSortValueException,
-                MalformedEncodingException,
-                UnknownNaverException,
-            ): InvalidRequestException,
-            AuthenticationFailedException: ApplicationAuthenticationFailedException,
-            InvalidSearchAPIException: NotFoundException,
-            SystemErrorException: InternalServerErrorException,
-        }
-
-        for exception_types, mapped_exception in exception_mapping.items():
-            if isinstance(exception, exception_types):
-                raise mapped_exception(str(exception))
-
-        raise exception
 
     def search_restaurants(self, name: str) -> list[SearchRestaurantsDto]:
         try:
             restaurants: list[dict[str, Any]] = self._naver_client.search_places(name=name)
         except Exception as exc:
-            self._handle_search_exceptions(exc)
+            raise self._exception_handler.handle_search_exceptions(exc)
 
         daegu_restaurants: list[dict[str, Any]] = self._filter_daegu_gyungsan_restaurants(restaurants)
         search_results: list[SearchRestaurantsDto] = [
@@ -93,32 +55,11 @@ class RestaurantService:
 
         return search_results
 
-    def _check_duplicate_restaurant(self, name: str, address: str, ip_address: str) -> None:
-        cooldown_date: datetime = timezone.now() - timezone.timedelta(
-            days=self.RESTAURANT_ADD_COOLDOWN_DAYS
-        )
-        if Restaurant.objects.filter(
-            name=name,
-            address=address,
-            detail_address=name,
-            created__gte=cooldown_date,
-            ip_addresses__ip_address=ip_address,
-        ).exists():
-            raise AlreadyAddRestaurantException(
-                f"같은 식당은 {self.RESTAURANT_ADD_COOLDOWN_DAYS}일에 1번만 추천할 수 있습니다."
-            )
-
-    def _validate_category(self, category: str) -> None:
-        if category not in Restaurant.RestaurantType.values:
-            raise CategoryNotFoundException("해당하는 카테고리를 찾을 수 없습니다.")
-
     def _get_geocode_data(self, address: str) -> tuple[str, str, float]:
         try:
             return self._naver_client.get_geocode_distance_by_address(address=address)
-        except InvalidParameterException as exc:
-            raise InvalidRequestException(str(exc))
-        except SystemErrorException as exc:
-            raise InternalServerErrorException(str(exc))
+        except Exception as exc:
+            raise self._exception_handler.handle_geocode_exceptions(exc)
 
     def _get_image_links(self, name: str) -> list[str]:
         items: list[dict[str, Any]] = self._naver_client.get_images(name)
@@ -131,8 +72,8 @@ class RestaurantService:
     def create_restaurant(
         self, name: str, address: str, category: str, ip_address: str, review=None
     ) -> CreateRestaurantDto:
-        self._check_duplicate_restaurant(name, address, ip_address)
-        self._validate_category(category)
+        self._validator.validate_duplicate_restaurant(name, address, ip_address)
+        self._validator.validate_category(category)
 
         x, y, distance = self._get_geocode_data(address)
         if Restaurant.objects.filter(
@@ -159,7 +100,7 @@ class RestaurantService:
 
         IPAddress.objects.create(restaurant=restaurant, ip_address=ip_address)
 
-        images: list[str] = self._get_image_links({name})
+        images: list[str] = self._get_image_links(name)
         if images:
             RestaurantImage.objects.bulk_create(
                 [

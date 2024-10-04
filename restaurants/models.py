@@ -1,8 +1,6 @@
 from django.db import models
 from django_extensions.db.models import TimeStampedModel
 
-from restaurants.managers import RestaurantManager
-
 
 class Restaurant(TimeStampedModel):
     class RestaurantType(models.TextChoices):
@@ -38,8 +36,6 @@ class Restaurant(TimeStampedModel):
         verbose_name="이 가게를 고른 선수 이름", max_length=15, null=True, blank=True
     )
     suggested_count = models.IntegerField(verbose_name="추천된 횟수", default=1)
-
-    objects = RestaurantManager()
 
 
 class Review(TimeStampedModel):
