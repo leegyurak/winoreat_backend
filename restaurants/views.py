@@ -32,7 +32,7 @@ class ListRestaurantView(ListAPIView):
     permission_classes = [AllowAny]
     serializer_class = ListRestaurantSerializer
     filterset_class = RestaurantFilter
-    queryset = Restaurant.objects.all().order_by('far_from_lions_park', 'players_pick')
+    queryset = Restaurant.objects.all().order_by("far_from_lions_park", "players_pick")
 
 
 class SearchRestaurantsView(APIView):

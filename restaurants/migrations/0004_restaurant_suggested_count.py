@@ -9,9 +9,7 @@ from restaurants.models import Restaurant, RestaurantImage, Review
 def set_default_suggested_count(apps, schema_editor):
     restaurant_groups = Restaurant.objects.values("name").annotate(count=Count("id"))
     for restaurant_group in restaurant_groups:
-        reviews = Review.objects.filter(
-            restaurant__name=restaurant_group["name"]
-        )
+        reviews = Review.objects.filter(restaurant__name=restaurant_group["name"])
         images = RestaurantImage.objects.filter(
             restaurant__name=restaurant_group["name"]
         )

@@ -17,9 +17,13 @@ class RestaurantService:
     def __init__(self):
         self._naver_client: NaverClient = NaverClient()
         self._validator: RestaurantValidator = RestaurantValidator()
-        self._exception_handler: RestaurantExceptionHandler = RestaurantExceptionHandler()
+        self._exception_handler: RestaurantExceptionHandler = (
+            RestaurantExceptionHandler()
+        )
 
-    def _filter_daegu_gyungsan_restaurants(self, restaurants: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    def _filter_daegu_gyungsan_restaurants(
+        self, restaurants: list[dict[str, Any]]
+    ) -> list[dict[str, Any]]:
         return [
             restaurant
             for restaurant in restaurants
@@ -41,11 +45,15 @@ class RestaurantService:
 
     def search_restaurants(self, name: str) -> list[SearchRestaurantsDto]:
         try:
-            restaurants: list[dict[str, Any]] = self._naver_client.search_places(name=name)
+            restaurants: list[dict[str, Any]] = self._naver_client.search_places(
+                name=name
+            )
         except Exception as exc:
             raise self._exception_handler.handle_search_exceptions(exc)
 
-        daegu_restaurants: list[dict[str, Any]] = self._filter_daegu_gyungsan_restaurants(restaurants)
+        daegu_restaurants: list[dict[str, Any]] = (
+            self._filter_daegu_gyungsan_restaurants(restaurants)
+        )
         search_results: list[SearchRestaurantsDto] = [
             self._create_search_dto(restaurant) for restaurant in daegu_restaurants
         ]

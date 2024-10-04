@@ -20,9 +20,14 @@ class RestaurantExceptionHandler:
     @staticmethod
     def handle_search_exceptions(exception: Exception) -> Exception:
         exception_mapping = {
-            (InvalidDisplayValueException, IncorrectQueryRequestException,
-             InvalidStartValueException, InvalidSortValueException,
-             MalformedEncodingException, UnknownNaverException): InvalidRequestException,
+            (
+                InvalidDisplayValueException,
+                IncorrectQueryRequestException,
+                InvalidStartValueException,
+                InvalidSortValueException,
+                MalformedEncodingException,
+                UnknownNaverException,
+            ): InvalidRequestException,
             AuthenticationFailedException: ApplicationAuthenticationFailedException,
             InvalidSearchAPIException: NotFoundException,
             SystemErrorException: InternalServerErrorException,
