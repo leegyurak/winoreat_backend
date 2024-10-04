@@ -34,8 +34,6 @@ class Restaurant(TimeStampedModel):
     category = models.CharField(
         verbose_name="카테고리", choices=RestaurantType.choices, max_length=63
     )
-
-    ip_address = models.CharField(verbose_name="작성자 IP", max_length=63)
     players_pick = models.CharField(
         verbose_name="이 가게를 고른 선수 이름", max_length=15, null=True, blank=True
     )
@@ -62,3 +60,13 @@ class RestaurantImage(TimeStampedModel):
         related_name="images",
     )
     img_url = models.URLField(max_length=4095)
+
+
+class IPAddress(TimeStampedModel):
+    restaurant = models.ForeignKey(
+        Restaurant,
+        on_delete=models.CASCADE,
+        verbose_name="식당 id",
+        related_name="ip_addresses",
+    )
+    ip_address = models.CharField(verbose_name="작성자 IP", max_length=63)
