@@ -24,7 +24,7 @@ class RestaurantValidator:
     @classmethod
     def validate_distance(cls, distance: float) -> None:
         if distance > cls.MAXIMUM_DISTANCE_TO_LIONS_PARK:
-            raise TooFarFromLionsParkException("해당하는 카테고리를 찾을 수 없습니다.")
+            raise TooFarFromLionsParkException("라팍과의 거리가 20km를 넘습니다.")
 
     @classmethod
     def validate_duplicate_restaurant(
