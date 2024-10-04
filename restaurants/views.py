@@ -14,6 +14,7 @@ from exceptions import (
     InternalServerErrorException,
     InvalidRequestException,
     NotFoundException,
+    TooFarFromLionsParkException,
 )
 from restaurants.dtos import CreateRestaurantDto, SearchRestaurantsDto
 from restaurants.filters import RestaurantFilter
@@ -87,6 +88,7 @@ class CreateRestaurantView(GenericAPIView):
         except (
             InvalidRequestException,
             AlreadyAddRestaurantException,
+            TooFarFromLionsParkException,
         ) as exc:
             raise ValidationError(detail=str(exc)) from exc
         except CategoryNotFoundException as exc:

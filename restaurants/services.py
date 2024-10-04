@@ -84,6 +84,10 @@ class RestaurantService:
         self._validator.validate_category(category)
 
         x, y, distance = self._get_geocode_data(address)
+        distance /= self.METERS_PER_KM
+
+        self._validator.validate_distance(distance)
+
         if Restaurant.objects.filter(
             name=name, address=address, detail_address=name
         ).exists():
@@ -100,7 +104,7 @@ class RestaurantService:
                 category=category,
                 longitude=x,
                 latitude=y,
-                far_from_lions_park=distance / self.METERS_PER_KM,
+                far_from_lions_park=distance,
             )
 
         if review:

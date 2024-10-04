@@ -7,17 +7,24 @@ from django.utils import timezone
 from exceptions import (
     AlreadyAddRestaurantException,
     CategoryNotFoundException,
+    TooFarFromLionsParkException,
 )
 from restaurants.models import IPAddress, Restaurant
 
 
 class RestaurantValidator:
     RESTAURANT_ADD_COOLDOWN_DAYS: Final[int] = 3
+    MAXIMUM_DISTANCE_TO_LIONS_PARK: Final[int] = 20
 
     @staticmethod
     def validate_category(category: str) -> None:
         if category not in Restaurant.RestaurantType.values:
             raise CategoryNotFoundException("해당하는 카테고리를 찾을 수 없습니다.")
+
+    @classmethod
+    def validate_distance(cls, distance: float) -> None:
+        if distance > cls.MAXIMUM_DISTANCE_TO_LIONS_PARK:
+            raise TooFarFromLionsParkException("해당하는 카테고리를 찾을 수 없습니다.")
 
     @classmethod
     def validate_duplicate_restaurant(
